@@ -1,9 +1,29 @@
-import { ErrorRequestHandler } from "express";
-import { INTERNAL_SERVER_ERROR } from "../constants/http";
+  import { Response, ErrorRequestHandler } from "express";
+  import { z } from "zod";
+  import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../constants/http";
 
-const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
-  console.log(`PATH: ${req.path}`, error);
-  res.status(INTERNAL_SERVER_ERROR).send("Interal server error");
-};
+  const handleZodError = (res: Response, error: z.ZodError) => {
+    const errors = error.issues.map((err) => ({
+      path: err.path.join("."),
+      message: err.message,
+    }));
 
-export default errorHandler;
+    return res.status(BAD_REQUEST).json({
+      errors,
+      message: error.message,
+    });
+  };
+
+  const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
+    console.log(`PATH ${req.path}`, error);
+
+    if (error instanceof z.ZodError) {
+      handleZodError(res, error);
+      return;
+    }
+
+    res.status(INTERNAL_SERVER_ERROR).send("Internal server error");
+    return;
+  };
+
+  export default errorHandler;

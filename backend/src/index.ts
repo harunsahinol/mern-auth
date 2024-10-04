@@ -23,15 +23,15 @@ app.use(
 );
 app.use(cookieParser());
 
-app.get("/", (req, res, next) => {
+app.get("/", (req, res) => {
+  // Removed unused next parameter
   res.status(OK).json({
-    status: "healhty",
+    status: "healthy", // Fixed typo
   });
 });
 
+app.use("/auth", authRoutes);
 app.use(errorHandler);
-
-app.use("/auth", authRoutes)
 
 app.listen(PORT, async () => {
   console.log(`Server is running on port ${PORT} in ${NODE_ENV} enviroment.`);
